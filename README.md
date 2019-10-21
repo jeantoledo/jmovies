@@ -1,68 +1,86 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# JMovies
 
-## Available Scripts
+A Serverless React app to stay up to date on the movie world.
 
-In the project directory, you can run:
+**Stack:**
+- React (Hooks).
+- Redux (used to share state between components without using props).
+- API gateway (simple way to create http endpoints for a Lambda function).
+- AWS Lambda (simple serverless aproach to use, gives all the advantages of serverless).
+- Material UI (beautiful and usefull component library).
 
-### `npm start`
+## scripts
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+**start app:** `yarn start`
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+**build static app:** `yarn build`
 
-### `npm test`
+# AWS Lambda code
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```nodejs
+var https = require('https');
 
-### `npm run build`
+const getGenres = (callback) => {
+    const genresUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${process.env.MDB_API_KEY}`;
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    https.get(genresUrl, (res) => {
+        let rawData = '';
+        res.on('data', (chunk) => { rawData += chunk; });
+        res.on('end', () => {
+            const parsedData = JSON.parse(rawData);
+            callback(parsedData.genres);
+        });
+    }).on('error', (e) => {
+        callback(Error(e))
+    });
+};
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+const movieGenres = (genres, genre_ids) => {
+    return genre_ids.map(id => {
+        const genre = genres.filter(genre => genre.id === id)[0];
+        return genre ? genre.name : '';
+    });
+}
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+const formatMovies = (movies, genres) => {
+    return movies.map(movie => ({
+      title: movie.title,
+      backdrop_path: movie.backdrop_path ? `http://image.tmdb.org/t/p/w500${movie.backdrop_path}` : undefined,
+      poster_path: movie.poster_path ? `http://image.tmdb.org/t/p/w500${movie.poster_path}` : undefined,
+      release_date: movie.release_date,
+      genres: movieGenres(genres, movie.genre_ids),
+      overview: movie.overview,
+    }));
+};
 
-### `npm run eject`
+exports.handler = function (event, context, callback) {
+    const page = event.queryStringParameters ? (event.queryStringParameters.page || 1) : 1;
+    const url = `https://api.themoviedb.org/3/movie/upcoming?api_key=${process.env.MDB_API_KEY}&page=${page}`;
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+    getGenres((genres) => {
+        console.log(genres);
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+        https.get(url, (res) => {
+            let rawData = '';
+            res.on('data', (chunk) => { rawData += chunk; });
+            res.on('end', () => {
+                const parsedData = JSON.parse(rawData);
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+                callback(null, {
+                    statusCode: 200,
+                    headers: {
+                        "Access-Control-Allow-Origin": "*"
+                    },
+                    body: JSON.stringify({
+                        page: parsedData.page,
+                        total_pages: parsedData.total_pages,
+                        results: formatMovies(parsedData.results, genres)
+                    })
+                })
+            });
+        }).on('error', (e) => {
+            callback(Error(e))
+        })
+    });
+}
+```
