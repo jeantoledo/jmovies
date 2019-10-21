@@ -1,5 +1,7 @@
 # JMovies
 
+Live app: http://jctmovies.s3-website-sa-east-1.amazonaws.com/
+
 A Serverless React app to stay up to date on the movie world.
 
 **Stack:**
@@ -14,6 +16,8 @@ A Serverless React app to stay up to date on the movie world.
 **start app:** `yarn start`
 
 **build static app:** `yarn build`
+
+**testing:** `yarn test`
 
 # AWS Lambda code
 
