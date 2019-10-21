@@ -1,5 +1,7 @@
 # JMovies
 
+Live app: http://jctmovies.s3-website-sa-east-1.amazonaws.com/
+
 A Serverless React app to stay up to date on the movie world.
 
 **Stack:**
