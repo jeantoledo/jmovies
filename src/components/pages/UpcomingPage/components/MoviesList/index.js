@@ -7,10 +7,9 @@ import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
 import Skeleton from '@material-ui/lab/Skeleton';
 import useStyles from './styles';
-import MovieDetails from '../MovieDetails';
 import { setMovieDetails } from '../../../../../redux/actionCreators';
 
-const MoviesList = ({ movies, setMovieDetails }) => {
+export const MoviesList = ({ movies, setMovieDetails }) => {
   const classes = useStyles();
 
   return (
@@ -35,8 +34,6 @@ const MoviesList = ({ movies, setMovieDetails }) => {
           </GridListTile>
         )) }
       </GridList>
-
-      <MovieDetails />
     </div>
   );
 }

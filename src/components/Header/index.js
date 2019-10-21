@@ -8,7 +8,7 @@ import InputBase from '@material-ui/core/InputBase';
 import SearchIcon from '@material-ui/icons/Search';
 import styles from './styles';
 
-const Header = ({ search, onChange }) => {
+export const Header = ({ search, onChange }) => {
   const classes = styles();
 
   return (

@@ -10,7 +10,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import { clearMovieDetails } from '../../../../../redux/actionCreators';
 import useStyles from './styles';
 
-const MovieDetails = ({ open, clearMovieDetails, movie }) => {
+export const MovieDetails = ({ open, clearMovieDetails, movie }) => {
   const classes = useStyles();
 
   return (
