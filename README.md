@@ -17,6 +17,8 @@ A Serverless React app to stay up to date on the movie world.
 
 **build static app:** `yarn build`
 
+**testing:** `yarn test`
+
 # AWS Lambda code
 
 ```nodejs
